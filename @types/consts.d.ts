@@ -1,4 +1,5 @@
-declare module 'internal:constants' {
+declare module "internal:constants" {
+    export const CELER_X: boolean;
     /**
      * This constant is private and used for internal purpose only.
      *
