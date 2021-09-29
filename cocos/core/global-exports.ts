@@ -49,9 +49,9 @@ import {
     OPPO,
     VIVO,
     EXPORT_TO_GLOBAL,
-} from 'internal:constants';
+} from "internal:constants";
 
-const _global = typeof window === 'undefined' ? global : window;
+const _global = typeof window === "undefined" ? global : window;
 
 /**
  * @en
@@ -70,6 +70,7 @@ export const legacyCC: Record<string, any> & {
 legacyCC.internal = {};
 
 if (EXPORT_TO_GLOBAL) {
+    _global.CELER_X = false;
     // Supports dynamically access from external scripts such as adapters and debugger.
     // So macros should still defined in global even if inlined in engine.
     /**
@@ -173,7 +174,7 @@ if (DEV) {
     legacyCC._Test = {};
 }
 
-const engineVersion = '3.3.1';
+const engineVersion = "美丽大方吃吃定制版3.3.1";
 
 /**
  * The current version of Cocos2d being used.<br/>
@@ -184,4 +185,230 @@ _global.CocosEngine = legacyCC.ENGINE_VERSION = engineVersion;
 
 _global.cc = legacyCC;
 
+/**
+ * 多语言
+ */
+class lan {
+    private _tMap: {
+        [key: string]: {
+            [key: number]: {
+                [key: number]: string;
+            };
+        };
+    } = {};
+
+    private _styleMap: {
+        [key: number]: {
+            [key: number]: {
+                FontSize: number;
+                /**  (0: left, 1: center, 2: right)*/
+                HorizontalAlign: number;
+                /** (0: top, 1: center, 2: bottom) */
+                VerticalAlign: number;
+                MaxWidth: number;
+                LineHeight: number;
+            };
+        };
+    } = {};
+    /**
+   *en  英语
+
+pt  葡萄牙语
+
+es  西班牙语
+
+in | id   印尼语
+
+tl | fil   菲律宾
+   */
+    private _lan: string = "en";
+
+    /**
+     *
+     * @param {string} lan
+     * @param {{[key:number]: {[key:number]:{}}}}  styleMap
+     */
+    defineStyle(lanType: string, styleMap: any) {
+        if (this._styleMap[lanType]) {
+            Object.assign(this._styleMap[lanType], styleMap);
+        } else {
+            this._styleMap[lanType] = styleMap;
+        }
+    }
+
+    /**
+     *
+     * @param {string} lan
+     * @param {{[key:number]: {[key:string]:number}}} stringMap
+     */
+    define(lanType: string, stringMap: any) {
+        if (this._tMap[lanType]) {
+            Object.assign(this._tMap[lanType], stringMap);
+        } else {
+            this._tMap[lanType] = stringMap;
+        }
+    }
+
+    /**
+     * 设置当前语种
+     * @param {string} lan
+     */
+    set(lan: string) {
+        this._lan = lan;
+    }
+
+    /**
+     * 获取文本
+     * @param {number} key
+     * @param {number} originStr
+     */
+    t(key: number, contentType: number, replaceText: string[]) {
+        if (!this._tMap[this._lan]) return "";
+
+        if (!this._tMap[this._lan][key]) return "";
+
+        if (!this._tMap[this._lan][key][contentType]) return "";
+        let resultText = this._tMap[this._lan][key][contentType];
+        if (replaceText && replaceText instanceof Array) {
+            for (let text of replaceText) {
+                resultText = resultText.replace("${##}", text);
+            }
+        }
+        return resultText;
+    }
+
+    /**
+     *
+     * @param {number} key
+     * @param {number} contentType
+     */
+    style(key: string, contentType: string) {
+        if (!this._styleMap[this._lan]) return {};
+
+        if (!this._styleMap[this._lan][key]) return {};
+
+        if (!this._styleMap[this._lan][key][contentType]) return {};
+
+        return this._styleMap[this._lan][key][contentType];
+    }
+}
+
+_global.lan = new lan();
+
+/**
+ *  科学计数法
+ */
+legacyCC.ScienceNumber = (
+    fromNumber: number,
+    maxLength: number,
+    fixCount: number,
+    isUpper: boolean = true,
+    isSingle: boolean = true,
+    smartFix: boolean = true
+) => {
+    let testResult = "";
+    if (smartFix) {
+        let testValue = Math.pow(10, fixCount) * fromNumber;
+        if (Math.floor(testValue) == testValue) {
+            testResult = fromNumber.toFixed(0);
+        } else {
+            testResult = fromNumber.toFixed(fixCount);
+        }
+    } else {
+        testResult = fromNumber.toFixed(fixCount);
+    }
+
+    if (testResult.length <= maxLength || maxLength == 0) {
+        return testResult;
+    }
+
+    /**
+     * 000  k
+     * 000,000  m
+     * 000,000,000  g
+     * 000,000,000,000  t
+     */
+
+    let format = isUpper
+        ? ["K", "M", "B", "T", "P"]
+        : ["k", "m", "b", "t", "p"];
+    let mod = Math.pow(1000, format.length);
+    let value = fromNumber;
+    let fixedResult = "";
+    let count = 0;
+
+    while (format.length > 0) {
+        let fix: string = format.pop() as string;
+        let fixValue = value / mod;
+        mod = mod / 1000;
+
+        if (mod < 1) break;
+        if (fixValue < 1) {
+            if (format.length <= 0) {
+                fixedResult =
+                    (
+                        Math.floor(fixValue * Math.pow(10, fixCount)) /
+                        Math.pow(10, fixCount)
+                    ).toFixed(fixCount) + fix;
+            }
+            continue;
+        }
+
+        //  console.error("fixValue:", fixValue, count);
+        let result =
+            ((fixedResult + fixValue.toFixed(fixCount)).length >= maxLength
+                ? count > 0 && isSingle == false
+                    ? Math.floor(fixValue)
+                    : fixValue.toFixed(fixCount)
+                : isSingle
+                ? fixValue.toFixed(fixCount)
+                : Math.floor(fixValue)) + fix;
+
+        fixedResult += result;
+        count++;
+
+        if (isSingle) return fixedResult;
+        if (fixedResult.length >= maxLength) {
+            return fixedResult;
+        }
+
+        value =
+            Math.floor(fixValue * mod * 1000) -
+            Math.floor(fixValue) * mod * 1000;
+    }
+
+    return fixedResult;
+};
+
+let start_callback = (match: any) => {};
+let match_info = {
+    /** 匹配ID */
+    matchId: "",
+    /** 随机种子 */
+    sharedRandomSeed: Math.random(),
+    /** 难度信息(目前根据游戏有的游戏不需要用到) */
+    difficultyLevel: 1,
+    /** 是否  新手 */
+    shouldLaunchTutorial: false,
+    /** 语种 en_US|zh_CN|pt_BR */
+    locale: "en_US",
+};
+legacyCC.OnStart = function (callback, defaultMatch) {
+    start_callback = callback;
+    Object.assign(match_info, defaultMatch);
+};
+
+legacyCC.StartGame = function (matchInfo) {
+    if (typeof matchInfo != "object") {
+        matchInfo = JSON.parse(matchInfo);
+    }
+    Object.assign(match_info, matchInfo);
+    if (start_callback) {
+        start_callback(match_info);
+    } else {
+        console.error("start callback is null:", match_info);
+    }
+};
+
+legacyCC.TimeScale = 1;
 export { engineVersion as VERSION };
