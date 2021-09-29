@@ -28,16 +28,14 @@
  * @module component/audio
  */
 
-import {
-    ccclass, type, serializable, override,
-} from 'cc.decorator';
-import { AudioPlayer, OneShotAudio } from 'pal/audio';
-import { Asset } from '../core/assets/asset';
-import { legacyCC } from '../core/global-exports';
-import { AudioState, AudioType } from '../../pal/audio/type';
+import { ccclass, type, serializable, override } from "cc.decorator";
+import { AudioPlayer, OneShotAudio } from "pal/audio";
+import { Asset } from "../core/assets/asset";
+import { legacyCC } from "../core/global-exports";
+import { AudioState, AudioType } from "../../pal/audio/type";
 
 export interface AudioMeta {
-    player: AudioPlayer,
+    player: AudioPlayer;
     url: string;
     type: AudioType;
     duration: number;
@@ -49,7 +47,7 @@ export interface AudioMeta {
  * @zh
  * 音频片段资源。<br>
  */
-@ccclass('cc.AudioClip')
+@ccclass("cc.AudioClip")
 export class AudioClip extends Asset {
     public static AudioType = AudioType;
 
@@ -62,17 +60,17 @@ export class AudioClip extends Asset {
 
     private _player?: AudioPlayer;
 
-    constructor () {
+    constructor() {
         super();
     }
 
-    public destroy (): boolean {
+    public destroy(): boolean {
         const destroyResult = super.destroy();
         this._player?.destroy();
         return destroyResult;
     }
 
-    set _nativeAsset (meta: AudioMeta | null) {
+    set _nativeAsset(meta: AudioMeta | null) {
         this._meta = meta;
         if (meta) {
             this._loadMode = meta.type;
@@ -84,12 +82,12 @@ export class AudioClip extends Asset {
         }
     }
 
-    get _nativeAsset () {
+    get _nativeAsset() {
         return this._meta;
     }
 
     @override
-    get _nativeDep () {
+    get _nativeDep() {
         return {
             uuid: this._uuid,
             audioLoadMode: this.loadMode,
@@ -98,15 +96,15 @@ export class AudioClip extends Asset {
         };
     }
 
-    get loadMode () {
+    get loadMode() {
         return this._loadMode;
     }
 
-    public validate () {
+    public validate() {
         return !!this._meta;
     }
 
-    public getDuration () {
+    public getDuration() {
         // Dynamicly loaded audioClip._duration is 0
         if (this._duration) {
             return this._duration;
@@ -116,87 +114,89 @@ export class AudioClip extends Asset {
 
     // #region deprecated method
     /**
-     * @deprecated since v3.1.0, please use AudioSource.prototype.state instead.
+     * deprecated since v3.1.0, please use AudioSource.prototype.state instead.
      */
-    public get state () {
+    public get state() {
         return this._player ? this._player.state : AudioState.INIT;
     }
 
     /**
-     * @deprecated since v3.1.0, please use AudioSource.prototype.getCurrentTime() instead.
+     * deprecated since v3.1.0, please use AudioSource.prototype.getCurrentTime() instead.
      */
-    public getCurrentTime () {
+    public getCurrentTime() {
         return this._player ? this._player.currentTime : 0;
     }
 
     /**
-     * @deprecated since v3.1.0, please use AudioSource.prototype.getVolume() instead.
+     * deprecated since v3.1.0, please use AudioSource.prototype.getVolume() instead.
      */
-    public getVolume () {
+    public getVolume() {
         return this._player ? this._player.volume : 0;
     }
 
     /**
-     * @deprecated since v3.1.0, please use AudioSource.prototype.getLoop() instead.
+     * deprecated since v3.1.0, please use AudioSource.prototype.getLoop() instead
      */
-    public getLoop () {
+    public getLoop() {
         return this._player ? this._player.loop : false;
     }
 
     /**
-     * @deprecated since v3.1.0, please use AudioSource.prototype.setCurrentTime() instead.
+     * deprecated since v3.1.0, please use AudioSource.prototype.setCurrentTime() instead.
      */
-    public setCurrentTime (time: number) {
+    public setCurrentTime(time: number) {
         this._player?.seek(time).catch((e) => {});
     }
 
     /**
-     * @deprecated since v3.1.0, please use AudioSource.prototype.setVolume() instead.
+     * deprecated since v3.1.0, please use AudioSource.prototype.setVolume() instead.
      */
-    public setVolume (volume: number) {
+    public setVolume(volume: number) {
         if (this._player) {
             this._player.volume = volume;
         }
     }
 
     /**
-     * @deprecated since v3.1.0, please use AudioSource.prototype.setLoop() instead.
+     * deprecated since v3.1.0, please use AudioSource.prototype.setLoop() instead.
      */
-    public setLoop (loop: boolean) {
+    public setLoop(loop: boolean) {
         if (this._player) {
             this._player.loop = loop;
         }
     }
 
     /**
-     * @deprecated since v3.1.0, please use AudioSource.prototype.play() instead.
+     * deprecated since v3.1.0, please use AudioSource.prototype.play() instead.
      */
-    public play () {
+    public play() {
         this._player?.play().catch((e) => {});
     }
 
     /**
-     * @deprecated since v3.1.0, please use AudioSource.prototype.pause() instead.
+     * deprecated since v3.1.0, please use AudioSource.prototype.pause() instead.
      */
-    public pause () {
+    public pause() {
         this._player?.pause().catch((e) => {});
     }
 
     /**
-     * @deprecated since v3.1.0, please use AudioSource.prototype.stop() instead.
+     * deprecated since v3.1.0, please use AudioSource.prototype.stop() instead.
      */
-    public stop () {
+    public stop() {
         this._player?.stop().catch((e) => {});
     }
 
     /**
-     * @deprecated since v3.1.0, please use AudioSource.prototype.playOneShot() instead.
+     * @eprecated since v3.1.0, please use AudioSource.prototype.playOneShot() instead.
      */
-    public playOneShot (volume = 1) {
+    public playOneShot(volume = 1) {
         if (this._nativeAsset) {
-            AudioPlayer.loadOneShotAudio(this._nativeAsset.url, volume).then((oneShotAudio) => {
-                oneShotAudio.play();
-            }).catch((e) => {});
+            AudioPlayer.loadOneShotAudio(this._nativeAsset.url, volume)
+                .then((oneShotAudio) => {
+                    oneShotAudio.play();
+                })
+                .catch((e) => {});
         }
     }
     // #endregion deprecated method
