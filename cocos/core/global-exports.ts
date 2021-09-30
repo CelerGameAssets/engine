@@ -70,7 +70,7 @@ export const legacyCC: Record<string, any> & {
 legacyCC.internal = {};
 
 if (EXPORT_TO_GLOBAL) {
-    _global.CELER_X = false;
+    // _global.CELER_X = false;
     // Supports dynamically access from external scripts such as adapters and debugger.
     // So macros should still defined in global even if inlined in engine.
     /**
