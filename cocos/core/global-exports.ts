@@ -49,6 +49,7 @@ import {
     OPPO,
     VIVO,
     EXPORT_TO_GLOBAL,
+    CELER_X,
 } from "internal:constants";
 
 const _global = typeof window === "undefined" ? global : window;
@@ -102,7 +103,7 @@ if (EXPORT_TO_GLOBAL) {
      * @en The pre-compilation constant for code tree shaking: CC_DEBUG (Available for debug environment)
      * @zh 预编译宏变量，通常用来做平台或环境相关自动代码剔除：CC_DEBUG（在调试模式下生效）
      */
-    _global.CC_DEBUG = DEBUG;
+    _global.CC_DEBUG = !CELER_X;
     /**
      * @en The pre-compilation constant for code tree shaking: CC_JSB (Available for native application environment)
      * @zh 预编译宏变量，通常用来做平台或环境相关自动代码剔除：CC_JSB（在原生应用环境下生效）
